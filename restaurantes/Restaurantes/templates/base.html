@@ -1,0 +1,193 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>Resturantes | Granada</title>
+	<link rel="stylesheet" href="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.min.css">
+	{% load staticfiles %}
+	<!-- CSS -->
+	<link href="{% static 'css/foundation.css' %}" rel="stylesheet"> 
+	<link href="{% static 'css/restaurantes.css' %}" rel="stylesheet"> 
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+
+</head>
+<body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+	<div class="top-bar">
+		<div class="top-bar-left">
+			<ul class="menu">
+				<li class="menu-text">Gestión de restaurantes</li>
+
+				{% block body_block %}
+				<!-- Bloque de fallo para entrar o registrarse -->
+				{% endblock %}
+
+				<div class="reveal" id="modal_entrar" data-reveal style="position: absolute;top:50%;left:50%; margin-left: -300px;"> <!--Se carga en linea para sobreescribir los estilos propios de Foundation -->
+
+					<form method="post" action="/accounts/login/">
+						{% csrf_token %}
+						<input type="text" id="id_username" name="username"> </input>
+						<input type="password" id="id_password" name="password"> </input>
+						<input type="submit" value="Entrar" />
+					</form>
+
+				</div>
+
+
+
+				<div class="reveal" id="modal_reg" data-reveal style="position: absolute;top:50%;left:50%; margin-left: -300px;"> <!--Se carga en linea para sobreescribir los estilos propios de Foundation -->
+
+					<!--Formularios cargados por modal para entrar y registrarse-->
+					<h1>Registro de usuario</h1>
+					<form method="post" action="/accounts/register/">
+						{% csrf_token %}
+						<p class="required"><label class="required" for="id_username">Nombre de usuario:</label> <input id="id_username" maxlength="30" name="username" type="text"> <span class="helptext">Obligatorio. 30 caracteres o menos. Letras, digitos y @/./+/-/_ solo.</span></p>
+						<p class="required"><label class="required" for="id_email">E-mail:</label> <input id="id_email" name="email" type="email"></p>
+						<p class="required"><label class="required" for="id_password1">Contraseña:</label> <input id="id_password1" name="password1" type="password"></p>
+						<p class="required"><label class="required" for="id_password2">Confirmación de la contraseña:</label> <input id="id_password2" name="password2" type="password"> <span class="helptext">Introduce la misma contraseña para verificarla.</span></p>
+
+						<input value="Registrarse" type="submit">
+					</form>
+
+				</div>
+
+
+			</ul>
+		</div>
+		<div class="top-bar-right">
+			<ul class="menu">
+				{% if user.is_authenticated %}
+				<li>Bienvenido <strong>{{user.username}}</strong></li>
+				<li><a href="{% url 'auth_logout' %}">Salir</a></li>
+				{% else %}
+				<li><a data-open="modal_entrar" >Entrar</a></li>
+				<li><a data-open="modal_reg" >Registrarse</a></li>
+				{% endif %}
+			</ul>
+		</div>
+	</div>
+	
+
+
+
+	<div class="orbit" role="region" aria-label="Favorite Space Pictures" data-orbit>
+		<ul class="orbit-container">
+			<button class="orbit-previous" aria-label="previous"><span class="show-for-sr">Previous Slide</span>&#9664;</button>
+			<button class="orbit-next" aria-label="next"><span class="show-for-sr">Next Slide</span>&#9654;</button>
+			<li class="orbit-slide is-active">
+				<img src="{% static 'images/res2.jpg' %}">
+			</li>
+			<li class="orbit-slide">
+				<img src="{% static 'images/res1.jpg' %}">
+			</li>
+		</ul>
+	</div>
+	
+	<div class="row column text-center">
+		<h2>Algunos establecimientos</h2>
+		<hr>
+	</div>
+
+	<div class="row small-up-2 large-up-4">
+
+		<script src="https://code.jquery.com/jquery-2.2.2.min.js" integrity="sha256-36cp2Co+/62rEAAYHLmRCPIych47CvdM+uTBJwSzWjI=" crossorigin="anonymous"></script>
+		
+		<script>
+			$(function(){
+				
+				$('.likes').click(function(){
+					var catid;
+					
+					catid = $(this).attr("data-catid");
+					$.get('/app_restaurantes/like_category/', {me_gusta: catid}, function(data){
+						$('#'+catid).html(data);
+ 		       $('.likes').hide(); //Solo se vota una vez 
+ 		   });
+				});
+				
+			});
+			
+			
+		</script>
+		
+		
+		{% for r in restaurante %}
+		<div class="column">
+			<img class="thumbnail" style ="width: 240px; height: 200px;"src="{{ r.imagen }}">
+			<h5>{{ r.nombre }}</h5>
+			<p>{{ r.direccion }}</p>
+			<!--Boton me gusta-->
+			
+			<a href="mailto:{{ r.email }}" class="button expanded"> Contacta con ellos</a>
+			
+			<div class="likes" data-catid="{{r.id}}"> 
+				<div class="small button success" class="{{r.id}}" style="margin: 0 auto;"> Me gusta</div>
+			</div>
+			<div id="{{r.id}}"> {{ r.me_gusta }} </div>
+			
+
+		</div>
+		{% endfor %}
+
+	</div>
+
+
+
+	<script>
+
+		var myApp = angular.module('myApp',[]);
+
+		myApp.controller('ListController', function($scope) {
+			$scope.names = ["1", "2", "3", "4", "5", "6", "7"];
+		});
+
+	</script>
+
+
+	{% verbatim %}
+	<hr>
+	<div class="row column" ng-app="myApp">
+		<div class="callout primary">
+			<h4 style="text-align: center;" title="Uso de servicio REST apoyado de angularJS"> Peticiones REST</h4>
+		</div>
+
+		<p> <a href="/app_restaurantes/api/restaurantes"> REST de elementos 'restaurantes' </a> </p>
+
+		<div  ng-controller="ListController" > 
+
+			<div style="display: inline-flex;">
+				<p> Escoge de manera dinámica el restaurante para hacer la petición: </p>
+
+				<select ng-model="seleccionado" style="width: 350px; margin: -5px 10px;">
+					<option ng-repeat="x in names" value="{{x}}">{{x}}</option>
+				</select>
+			</div>
+
+			<p style="width: 750px;"> <a href="/app_restaurantes/api/restaurante/{{seleccionado}}/"> REST de elemento 'restaurante {{seleccionado}}' </a> </p>
+
+		</div>
+
+		<p> <a href="/app_restaurantes/ng-test/"> API REST propia </a> </p>
+
+	</div>
+	<hr>
+	{% endverbatim %}
+
+	<div class="callout large secondary">
+		<div class="row">
+			<div class="large-4 columns">
+				
+				<p>Realizado por Miguel Fernandez Villegas</p>
+			</div>
+		</div>
+		
+	</div>
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script src="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
+	<script>
+		$(document).foundation();
+	</script>
+</body>
+</html>

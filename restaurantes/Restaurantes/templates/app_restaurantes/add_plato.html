@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block contenido %}
+
+
+<H2> HOLAAAA </H2>
+<form method="post" action="{% url 'add_plato' restaurante.nombre %}">
+{% csrf_token %}
+{{ form.as_p }}
+
+</form>
+
+{% endblock %}

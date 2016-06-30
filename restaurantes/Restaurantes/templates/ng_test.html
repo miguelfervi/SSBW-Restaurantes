@@ -1,0 +1,151 @@
+{% load staticfiles %}
+
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Restaurantes | Granada </title>
+
+  <link  href="{% static 'css/foundation.css' %}" rel="stylesheet">
+  <link  href="{% static 'css/restaurantes.css' %}" rel="stylesheet">
+
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+  <script type="text/javascript">
+    var myApp = angular.module('myApp',[]);
+
+    myApp.controller('Restaurants', function($scope, $http) {
+      $http.get("/app_restaurantes/api/restaurantes/?format=json").then(function(response) {
+            $scope.restaurants = response.data;
+      }, function(e){
+        // error
+        showMessage("Error!", "alert");
+      });
+      $scope.getRestaurants = function(){
+        $http.get("/app_restaurantes/api/restaurantes/?format=json").then(function(response) {
+            $scope.restaurants = response.data;
+        }, function(e){
+          // error
+          showMessage("Error!", "alert");
+        });
+      };
+      $scope.deleteRestaurant = function(slug){
+        $http.delete("/app_restaurante/api/"+ slug).then(function(response) {
+          showMessage("Eliminado!", "success");
+          $scope.getRestaurants();
+        }, function(e){
+          // error
+          showMessage("Error!", "alert");
+        });
+      };
+      $scope.addRestaurant = function(slug){
+        var data = { 
+          "nombre": $scope.newName,
+              "direccion": $scope.newDirection,
+              "foto": $scope.newPhoto,
+              "me_gusta": $scope.newLikes,
+              "slug": "it-doesnt-matter"
+        };
+        $http.post("/app_restaurantes/api/", data).then(function(response) {
+          if(response.data.nombre != $scope.newName)
+          {
+            return showMessage("Error! " + JSON.stringify(response.data), "alert");
+          }
+          // Clean data
+          $scope.newName = "";
+          $scope.newPhoto = "";
+          $scope.newDirection = "";
+          $scope.newLikes = "";
+          showMessage("Añadido!", "success");
+          $scope.restaurants.push(data);
+        }, function(e){
+          // error
+          showMessage("Error!", "alert");
+        });
+      };
+      $scope.editRestaurant = function(){
+        var slug = $scope.editSlug;
+        var data = { 
+          "nombre": $scope.newName,
+              "direccion": $scope.newDirection,
+              "foto": $scope.newPhoto,
+              "me_gusta": $scope.newLikes,
+              "slug": "it-doesnt-matter"
+        };
+        $http.put("/app_restaurantes/api/"+ $scope.editSlug +"/", data).then(function(response) {
+          // Clean data
+          $scope.newName = "";
+          $scope.newPhoto = "";
+          $scope.newDirection = "";
+          $scope.newLikes = "";
+          showMessage("Editado!", "success");
+          $scope.getRestaurants();
+        }, function(e){
+          // error
+          showMessage("Error!", "alert");
+        });
+        $("#editBtn").hide();
+      };
+      $scope.showEditRestaurant = function(slug, name, dir, telf, foto){
+        $scope.editSlug = slug;
+        $scope.newName = name;
+        $scope.newPhoto = foto;
+        $scope.newDirection = dir;
+        $scope.newLikes = telf;
+        $("#editBtn").show();
+      };
+    });
+  </script>
+
+</head>
+<body ng-app="myApp">
+
+  {% verbatim %}
+
+  <div id="alerts" style="position:fixed;top:3px;right:5px;width:230px;"></div>
+  
+  <div ng-controller="Restaurants" ng-init="restaurants=[]">
+
+    <table>
+      <tr>
+        <td><b>Nombre</b></td> <td><b>Dirección</b></td> <td><b>Me gusta (Likes)</b></td> <td><b>Foto</b></td>
+        </tr>
+        <tr ng-form name="myform">
+        <td><input type="text" ng-model="newName" placeholder="Nombre" required></td>
+        <td><input type="text" ng-model="newDirection" placeholder="Direccion" required></td>
+        <td><input type="text" ng-model="newLikes" placeholder="Me gusta almacenados" required></td>
+        <td><input type="text"  ng-model="newPhoto" placeholder="Insertar src de la imagen"  required></td>
+        <td><button ng-click="addRestaurant()" class="button success" ng-disabled="!myform.$valid">Añadir</button></td>
+        <td style="display:none" id="editBtn"><button ng-click="editRestaurant()" class="button secondary" ng-disabled="!myform.$valid">Guardar</button><input type="hidden" ng-model="editSlug" value="{{ editSlug }}"></td>
+        
+        
+        </tr>
+      <tr ng-repeat="r in restaurants">
+        <td>{{ r.nombre }}</td>
+        <td>{{ r.direccion }}</td>
+        <td style="text-align: center;">{{ r.me_gusta }}</td>
+        <td> <img src="{{ r.imagen }}" style="width: 100px;"> </img> </td>
+        <td><a href="#!" data-toggle="editRestaurantModal" ng-click="showEditRestaurant(r.slug, r.nombre, r.direccion, r.me_gusta, r.imagen)" class="button">Editar</a></td>
+        <td ng-click="deleteRestaurant(r.slug, r.nombre, r.direccion, r.me_gusta, r.imagen)"><a href="#!" class="button alert">Eliminar</a></td>
+        </tr>
+      </table>
+
+  </div>
+
+  {% endverbatim %}
+
+  <script src="{% static 'js/vendor/jquery.min.js' %}"></script>
+  <script src="{% static 'js/foundation.min.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+  <script>
+  $(document).foundation();
+  function showMessage(message, type) {
+      $("#alerts").append('<div class="'+type+' callout" data-closable="slide-out-right">'+message+'<button class="close-button" aria-label="Dismiss alert" type="button" data-close><span aria-hidden="true">&times;</span></button></div>');
+      $(document).foundation();
+  }
+  </script>
+
+</body>
+</html>

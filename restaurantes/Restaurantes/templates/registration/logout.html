@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+
+{% block body_block_salida %}
+<h1>Desconectado</h1>
+        <p>Ya ha sido desconectado</p>
+
+        <p>¿Deseas volver a entrar? <a href="{% url 'auth_login' %}">Entrar</a>!</p>
+{% endblock %}
